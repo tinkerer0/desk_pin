@@ -1,6 +1,6 @@
 import AppKit
 
-// DeskPin Phase 0 spike — DESIGN.md §6 S1~S5 실측용 최소 창.
+// DeskPin 초기 실험용 최소 창.
 // usage: deskpin_spike [x] [y] [level]   (level: "desktopIcon+1" | "normal-1")
 // 판정 근거는 /tmp/deskpin_spike.log 에 쌓인다.
 

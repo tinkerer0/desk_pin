@@ -1,6 +1,6 @@
 import Foundation
 
-// DESIGN.md P1 — Application Support JSON, atomic write, schemaVersion, corrupt 시 .bak 격리.
+// 설정 저장 — Application Support JSON, atomic write, schemaVersion, corrupt 시 .bak 격리.
 
 struct WidgetConfig: Codable {
     var id: String
@@ -40,7 +40,7 @@ final class ConfigStore {
             config = parsed
         } else {
             if FileManager.default.fileExists(atPath: dirURL.appendingPathComponent("config.json").path) {
-                // 파손 격리 — 크래시 금지, 기본값으로 재시작 (DESIGN P1)
+                // 파손 격리 — 크래시 금지, 기본값으로 재시작
                 let bak = dirURL.appendingPathComponent("config.json.bak")
                 try? FileManager.default.removeItem(at: bak)   // 리뷰 반영: 기존 .bak 있으면 move가 throw
                 try? FileManager.default.moveItem(
@@ -59,7 +59,7 @@ final class ConfigStore {
                 x: 1030, y: 180, size: 150, visible: true))
             scheduleSave()
         }
-        // 공놀이 루프 위젯 부활(Boss 2026-06-13 오후, 도트복원판 도입) — 직전 "집 2채+탐정만" 구성 결정을 대체
+        // Clawd 공놀이 루프 위젯
         if !config.widgets.contains(where: { $0.id == "juggle" }) {
             config.widgets.append(WidgetConfig(
                 id: "juggle", kind: .clawdLoop,
@@ -68,7 +68,7 @@ final class ConfigStore {
                 x: 1680, y: 605, size: 110, visible: true))
             scheduleSave()
         }
-        // cody 공놀이 루프 위젯 (Boss 2026-06-13 오후)
+        // Cody 공놀이 루프 위젯
         if !config.widgets.contains(where: { $0.id == "cody_juggle" }) {
             config.widgets.append(WidgetConfig(
                 id: "cody_juggle", kind: .codexLoop,
@@ -77,7 +77,7 @@ final class ConfigStore {
                 x: 1545, y: 605, size: 110, visible: true))
             scheduleSave()
         }
-        // Clawd 모션 위젯 8종 (claude.ai 공식 모션 → PNG 시퀀스, 기본 숨김, 2026-06-17)
+        // Clawd 모션 위젯 8종 (PNG 시퀀스, 기본 숨김)
         // kind=.clawdLoop + motion 필드로 구분 → draw가 clawd_{motion}_NN.png 로드.
         let clawdMotions = ["dancing", "crabwalk", "jumping", "lurking",
                             "racingcar", "waving", "sailing", "laptop"]

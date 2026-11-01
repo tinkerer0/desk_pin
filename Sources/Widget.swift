@@ -1,6 +1,6 @@
 import AppKit
 
-// DESIGN.md W1~W5, I1~I4 — 위젯 창과 입력 처리.
+// 위젯 창과 입력 처리.
 // Phase 0 실측 반영: 레벨 desktopIcon+1(클릭 수신 PASS), alpha 백킹(PASS), 수동 리사이즈(시스템 .resizable FAIL).
 
 final class WidgetPanel: NSPanel {
@@ -8,7 +8,7 @@ final class WidgetPanel: NSPanel {
     override var canBecomeMain: Bool { false }
 }
 
-// 공식 모션 스프라이트 (tools/make_sprites.swift·key_motion.swift 산출물, 번들 Resources)
+// 모션 스프라이트 (번들 Resources)
 enum JuggleSprites {
     static let clawd = load("clawd", "juggle")
     static let cody = load("cody", "juggle")
@@ -129,7 +129,7 @@ final class WidgetView: NSView {
         case .idle:
             if phaseBeat >= phaseDur { enter(.walkToDesk) }   // 하루 루틴 고정 (2026-06-13)
         case .play:
-            // 비트맵 스프라이트 모드: 영상 추출 프레임을 그대로 루프 (3바퀴 후 출근)
+            // 비트맵 스프라이트 모드: 스프라이트 프레임을 그대로 루프 (3바퀴 후 출근)
             let bitmapCount = JuggleSprites.frames(for: kind).count
             if bitmapCount > 0 {
                 if phaseBeat >= bitmapCount * 3 { enter(.walkToDesk) }
@@ -185,7 +185,7 @@ final class WidgetView: NSView {
         switch p {
         case .idle: phaseDur = 25 + Int.random(in: 0...20)    // 0.1s 박자 ≈2.5~4.5초
         case .work: phaseDur = 35 + Int.random(in: 0...25)    // 0.1s 박자 기준 ≈3.5~6초
-        case .doze: phaseDur = 30 + Int.random(in: 0...15)    // ≈3~4.5초 (Boss: "조는 거 좀만 더 길게")
+        case .doze: phaseDur = 30 + Int.random(in: 0...15)    // ≈3~4.5초
         case .sleep: phaseDur = 35 + Int.random(in: 0...25)   // ≈3.5~6초
         case .play:
             phaseDur = .max                                   // 저글링 단계가 자체 종료
@@ -205,7 +205,7 @@ final class WidgetView: NSView {
 
         // W3 alpha 백킹은 창 배경(applyWindowTraits)에서 처리 — 뷰 fill은 회색 박스로 비침(실측)
 
-        // 모션 루프 전용 위젯 — 추출 프레임만 꽉 채워 재생 (방·단계 없음, 원본과 1:1)
+        // 모션 루프 전용 위젯 — 스프라이트 프레임만 꽉 채워 재생 (방·단계 없음)
         if kind == .clawdLoop || kind == .codexLoop || kind == .detectiveLoop {
             let fallback = kind == .detectiveLoop ? "detective" : "juggle"
             let motion = ConfigStore.shared.widget(widgetId)?.motion ?? fallback
@@ -232,8 +232,8 @@ final class WidgetView: NSView {
         let cell = min(bounds.width / Sprites.sceneW, bounds.height / Sprites.sceneH)
         let ox = (bounds.width - Sprites.sceneW * cell) / 2
         let oy = (bounds.height - Sprites.sceneH * cell) / 2
-        // 픽셀 격자 스냅 (2026-06-13 Boss: "픽셀이 영상이랑 달라") — 셀 경계를 디바이스 픽셀에
-        // 정렬해 굵기 들쭉날쭉/시접 제거. 영상의 균일한 픽셀 질감 재현.
+        // 픽셀 격자 스냅 — 셀 경계를 디바이스 픽셀에
+        // 정렬해 굵기 들쭉날쭉/시접 제거.
         let bs = window?.backingScaleFactor ?? 2
         for c in f.cells {
             c.color.setFill()

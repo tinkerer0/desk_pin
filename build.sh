@@ -1,5 +1,5 @@
 #!/bin/zsh
-# DeskPin 빌드·설치 (DESIGN.md B3 — 4단계 고정: 종료 → 삭제 → 조립·서명 → 검증)
+# DeskPin 빌드·설치 (4단계: 종료 → 삭제 → 조립·서명 → 검증)
 set -e
 cd "$(dirname "$0")"
 

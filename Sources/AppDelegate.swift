@@ -32,7 +32,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate, NSMe
         watchScreenAndWake()
         startTimer()
         if ConfigStore.shared.config.launchAtLogin == nil {
-            enableLaunchAtLogin()   // Boss 결정(2026-06-13): 기본 ON — 메뉴에서 끌 수 있음
+            enableLaunchAtLogin()   // 기본 ON — 메뉴에서 끌 수 있음
         }
         NotificationCenter.default.addObserver(
             forName: .deskPinConfigChanged, object: nil, queue: .main) { [weak self] _ in
@@ -65,7 +65,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate, NSMe
         panel.level = NSWindow.Level(rawValue: Int(CGWindowLevelForKey(.desktopIconWindow)) + 1)  // S1 PASS
         panel.collectionBehavior = [.canJoinAllSpaces, .stationary, .ignoresCycle]                 // W5
         panel.isOpaque = false
-        // W3 히트영역: 알파 백킹은 0.01에서도 회색 상자가 미세하게 보임(Boss 실측 2026-06-12)
+        // W3 히트영역: 알파 백킹은 0.01에서도 회색 상자가 미세하게 보임
         // → 완전 투명 + ignoresMouseEvents 명시(false)로 창 전체 히트.
         //    비문서 tri-state지만 macOS 26.4에서 투명영역 클릭 동작 실측 확인(2026-06-12).
         //    OS 업데이트 후 빈 곳 클릭이 죽으면 폴백: backgroundColor = black alpha 0.005
@@ -251,7 +251,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate, NSMe
 
     private func startTimer() {
         // 리뷰 반영: scheduledTimer는 .default 모드 전용 — 메뉴 트래킹 중 애니메이션이 얼지 않게 .common 등록
-        // 박자 0.1s — 공식 영상 프레임 간격과 1:1 (저글링 22프레임 = 2.2s 루프)
+        // 박자 0.1s — 스프라이트 프레임 간격과 1:1 (저글링 22프레임 = 2.2s 루프)
         let t = Timer(timeInterval: 0.1, repeats: true) { [weak self] _ in
             guard let self, ConfigStore.shared.config.animationsEnabled else { return }
             for (id, v) in self.views where self.panels[id]?.isVisible == true { v.tick() }

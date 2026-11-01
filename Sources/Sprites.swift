@@ -1,20 +1,20 @@
 import AppKit
 
-// 생활 사이클 씬 렌더 (2026-06-13 개편 — Boss 재결정: 모드 폐기, 작은 방 + 생활 루프)
+// 생활 사이클 씬 렌더 (작은 방 + 생활 루프)
 // 셀 좌표계: top-down(뷰 isFlipped), 단위 = 셀. 방(scene)은 고정 18×9.2셀:
 //   왼쪽 침대(0~4.8) · 가운데 마당 · 오른쪽 노트북 책상(13.6~18)
 // 캐릭터 스프라이트는 charX(셀)만큼 평행이동, 걷기는 charX가 박자마다 전진.
 
 enum WidgetKind: String, Codable {
     case clawd, codex
-    case clawdLoop = "clawd_loop"             // 영상 추출 저글링 무한 루프 (생활 사이클 없음)
+    case clawdLoop = "clawd_loop"             // 저글링 무한 루프 (생활 사이클 없음)
     case codexLoop = "codex_loop"             // cody 리컬러 저글링 무한 루프 (2026-06-13)
-    case detectiveLoop = "clawd_detective"    // 공식 돋보기 탐정 모션 무한 루프 (clawd-magnifier.gif, 113프레임)
+    case detectiveLoop = "clawd_detective"    // 돋보기 탐정 모션 무한 루프 (113프레임)
 }
 
 enum LifePhase {
     case idle          // 마당에서 정면 대기 (팔 들썩+깜빡)
-    case play          // 마당에서 공차기 (기상 후 고정 순서 — Boss 2026-06-13: "이어서 넣자")
+    case play          // 마당에서 공차기 (기상 후 고정 순서)
     case walkToDesk    // 오른쪽으로 출근
     case work          // 타자 (생각 멈춤 리듬 포함)
     case doze          // 책상에서 꾸벅 (눈 감고 z)
@@ -68,7 +68,7 @@ enum Sprites {
     static let sceneW: CGFloat = 20       // 방 폭 — 넓혀서 여백·동선 확보 (2026-06-13 2차 튜닝)
     static let sceneH: CGFloat = 8.65     // 벽(0~8) + 바닥(8~8.5) + 여유 (지붕 제거 후 축소)
     static let offsetY: CGFloat = 0.15    // 캐릭터 축소 후 음수 y 셀이 없어 최소 여백만
-    // 비율 튜닝(2026-06-13 3차, Boss: "캐릭터 크기 조금 줄이고") — 0.55 → 0.48
+    // 비율 튜닝 — 0.55 → 0.48
     static let charScale: CGFloat = 0.48
     static let charYOff: CGFloat = 8 * (1 - 0.48)   // 발바닥을 바닥(y=8)에 고정
     static let idleX: CGFloat = 7.8
@@ -102,7 +102,7 @@ enum Sprites {
         case .idle:
             c += front(kind, beat: beat, x: charX)
         case .play where playPose < 0:
-            break   // 비트맵 스프라이트 모드 — 방만 그리고 캐릭터+공은 WidgetView가 영상 추출 프레임으로 렌더
+            break   // 비트맵 스프라이트 모드 — 방만 그리고 캐릭터+공은 WidgetView가 스프라이트 프레임으로 렌더
         case .play:
             // 셀 기반 폴백 (스프라이트 PNG 없을 때) — 0.1초 전수 판독 키프레임
             switch playPose {
@@ -110,7 +110,7 @@ enum Sprites {
             case 2:  c += jugglePeak(kind, x: charX)
             default: c += juggleSide(kind, x: charX, ballRight: ballRight)
             }
-            // 체크무늬 축구공 (몸 폭의 ~1/5, 체커 패치 4개 — 영상 질감)
+            // 체크무늬 축구공 (몸 폭의 ~1/5, 체커 패치 4개)
             c.append(Cell(ballX, 7.0 - ballLift, 1.0, 1.0, NSColor(hex: 0xF0EEE8)))
             c.append(Cell(ballX + 0.10, 7.08 - ballLift, 0.28, 0.28, NSColor(hex: 0x26282E)))
             c.append(Cell(ballX + 0.58, 7.30 - ballLift, 0.28, 0.28, NSColor(hex: 0x26282E)))
@@ -139,7 +139,7 @@ enum Sprites {
                 let dots = min(3, (beat % 14) - 9)
                 if dots > 0 {
                     for i in 0..<dots {
-                        // 점 크기(0.35)는 고정이므로 간격도 비스케일(0.65)로 — 붙으면 선처럼 보임(Boss 실측)
+                        // 점 크기(0.35)는 고정이므로 간격도 비스케일(0.65)로 — 붙으면 선처럼 보임
                         c.append(Cell(charX + 5.4 * charScale + CGFloat(i) * 0.65,
                                       charYOff - 1.15 * charScale, 0.35, 0.35, NSColor(hex: 0x75716A)))
                     }
@@ -166,8 +166,8 @@ enum Sprites {
 
     private static func room(working: Bool) -> [Cell] {
         var r: [Cell] = []
-        // 집 골격 (2026-06-13, Boss: 지붕 제거) — 벽만
-        r.append(Cell(0, 0, 20, 8, NSColor(hex: 0xB5A98F)))          // 안쪽 벽 — B 크림 베이지 (Boss 픽 2026-06-13)
+        // 집 골격 — 벽만
+        r.append(Cell(0, 0, 20, 8, NSColor(hex: 0xB5A98F)))          // 안쪽 벽 — 크림 베이지
         // 창문 — 밤하늘 + 달 + 별 (머리 높이와 겹치지 않게 위·오른쪽으로 이동, 2026-06-13)
         r.append(Cell(12.2, 0.7, 2.8, 2.3, NSColor(hex: 0x54493C)))
         r.append(Cell(12.4, 0.88, 2.4, 1.94, NSColor(hex: 0x232B47)))
@@ -194,7 +194,7 @@ enum Sprites {
         if !working {
             r.append(Cell(18.52, 3.1, 0.45, 0.4, Palette.cursorGreen))  // 대기 화면 커서
         }
-        // 바닥 선반 (2026-06-13, Boss: "바닥도 있어야") — 밝은 윗선 + 어두운 몸체
+        // 바닥 선반 — 밝은 윗선 + 어두운 몸체
         r.append(Cell(0, 8.0, 20, 0.18, NSColor(hex: 0x6A707C)))
         r.append(Cell(0, 8.18, 20, 0.32, NSColor(hex: 0x454B55)))
         return r
@@ -309,7 +309,7 @@ enum Sprites {
 
         switch eyes {
         case .open:
-            // 2026-06-13 Boss: "옆모습 눈이 너무 커" — 1×1.4 → 0.85×1.05
+            // 옆모습 눈 크기 1×1.4 → 0.85×1.05
             local.append(Cell(4.1, 1.15 + t, 0.85, 1.05, Palette.eye))
             local.append(Cell(7.1, 1.15 + t, 0.85, 1.05, Palette.eye))
         case .closed:
